@@ -1,0 +1,45 @@
+﻿<#@ template debug="false" hostspecific="true" language="C#" #>
+<#@ output extension=".txt" #>
+<#@ include file="$(ProjectDir)VsAutomationHelper.CS.ttinclude" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="EnvDTE"#>
+<#
+
+var dtehelper = new DteHelper(this.Host);
+var items = dteHelper.GetAllProjectItems();
+#>
+VS Version  <#=dteHelper.Dte.Version #>
+
+Current Solution: <#= dtehelper.Dte.Solution.FullName #>
+
+// Create DependentUpon Items
+<#
+var itm = items.Where(i => i.Name == "Class1.cs").First();
+var path = Path.GetDirectoryName(GetProjectItemFullPath(itm));
+
+var dependentUponFirstItem = Path.Combine(path, "DependentUponTest.txt4");
+File.WriteAllText(dependentUponFirstItem, "test2");
+
+itm.ProjectItems.AddFromFile(dependentUponFirstItem);
+
+#>
+
+Pfad: <#=path#>
+
+Projects
+
+<#
+foreach (var item in items)
+{
+  WriteLine(item.Name);
+}
+#>
+
+Current Project: <#= dtehelper.Dte.ActiveDocument.ProjectItem.ContainingProject.Name #>
+
+<#+
+	public string GetProjectItemFullPath(EnvDTE.ProjectItem item)
+	{
+		return item.Properties.Item("FullPath").Value.ToString();
+	}
+#>

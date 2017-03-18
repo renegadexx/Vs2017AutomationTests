@@ -1,0 +1,21 @@
+﻿
+VS Version  15.0
+
+Current Solution: R:\Projects\github\Vs2017AutomationTests\src\NetFrameworkProject\NetFrameworkProject.sln
+
+// Create DependentUpon Items
+
+Pfad: R:\Projects\github\Vs2017AutomationTests\src\NetFrameworkProject\NetFrameworkProject
+
+Projects
+
+DependentUponTest.txt4
+Class1.cs
+AssemblyInfo.cs
+Properties
+TextTemplate11.txt
+TextTemplate1.tt
+VsAutomationHelper.CS.ttinclude
+
+Current Project: NetFrameworkProject
+

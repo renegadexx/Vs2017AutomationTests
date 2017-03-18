@@ -1,0 +1,72 @@
+﻿<#@ template debug="false" hostspecific="true" language="C#" #>
+<#@ output extension=".txt" #>
+<#@ include file="$(ProjectDir)VsAutomationHelper.CS.ttinclude" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="EnvDTE"#>
+<#
+
+var dtehelper = new DteHelper(this.Host);
+var items = dteHelper.GetAllProjectItems();
+#>
+VS Version  <#=dteHelper.Dte.Version #>
+
+Current Solution: <#= dtehelper.Dte.Solution.FullName #>
+
+// Create DependentUpon Items
+<#
+var itm = items.Where(i => i.Name == "Class1.cs").First();
+var path = Path.GetDirectoryName(GetProjectItemFullPath(itm));
+
+var dependentUponFirstItem = Path.Combine(path, "DependentUponTest.txt4");
+File.WriteAllText(dependentUponFirstItem, "test2");
+
+// in .NET Standard no ItemGroup to csproj is added
+itm.ProjectItems.AddFromFile(dependentUponFirstItem);
+
+#>
+
+Pfad: <#=path#>
+
+Projects
+
+<#
+foreach (var item in items)
+{
+  WriteLine(item.Name);
+}
+#>
+
+Current Project: <#= dtehelper.Dte.ActiveDocument.ProjectItem.ContainingProject.Name #>
+
+Error of Current Project in .NET Standard
+Fehler		Ausgeführte Transformation: System.Runtime.Serialization.SerializationException: Der Typ "Microsoft.VisualStudio.ProjectSystem.VS.Implementation.Package.Automation.OAProjectItem" in Assembly "Microsoft.VisualStudio.ProjectSystem.VS.Implementation, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" ist nicht als serialisierbar gekennzeichnet.
+
+Server stack trace: 
+   bei System.Runtime.Serialization.FormatterServices.InternalGetSerializableMembers(RuntimeType type)
+   bei System.Runtime.Serialization.FormatterServices.GetSerializableMembers(Type type, StreamingContext context)
+   bei System.Runtime.Serialization.Formatters.Binary.WriteObjectInfo.InitMemberInfo()
+   bei System.Runtime.Serialization.Formatters.Binary.WriteObjectInfo.InitSerialize(Object obj, ISurrogateSelector surrogateSelector, StreamingContext context, SerObjectInfoInit serObjectInfoInit, IFormatterConverter converter, ObjectWriter objectWriter, SerializationBinder binder)
+   bei System.Runtime.Serialization.Formatters.Binary.WriteObjectInfo.Serialize(Object obj, ISurrogateSelector surrogateSelector, StreamingContext context, SerObjectInfoInit serObjectInfoInit, IFormatterConverter converter, ObjectWriter objectWriter, SerializationBinder binder)
+   bei System.Runtime.Serialization.Formatters.Binary.ObjectWriter.Serialize(Object graph, Header[] inHeaders, __BinaryWriter serWriter, Boolean fCheck)
+   bei System.Runtime.Serialization.Formatters.Binary.BinaryFormatter.Serialize(Stream serializationStream, Object graph, Header[] headers, Boolean fCheck)
+   bei System.Runtime.Remoting.Channels.CrossAppDomainSerializer.SerializeMessageParts(ArrayList argsToSerialize)
+   bei System.Runtime.Remoting.Messaging.SmuggledMethodReturnMessage..ctor(IMethodReturnMessage mrm)
+   bei System.Runtime.Remoting.Messaging.SmuggledMethodReturnMessage.SmuggleIfPossible(IMessage msg)
+   bei System.Runtime.Remoting.Channels.CrossAppDomainSink.DoDispatch(Byte[] reqStmBuff, SmuggledMethodCallMessage smuggledMcm, SmuggledMethodReturnMessage& smuggledMrm)
+   bei System.Runtime.Remoting.Channels.CrossAppDomainSink.DoTransitionDispatchCallback(Object[] args)
+
+Exception rethrown at [0]: 
+   bei System.Runtime.Remoting.Proxies.RealProxy.HandleReturnMessage(IMessage reqMsg, IMessage retMsg)
+   bei System.Runtime.Remoting.Proxies.RealProxy.PrivateInvoke(MessageData& msgData, Int32 type)
+   bei EnvDTE.Document.get_ProjectItem()
+   bei Microsoft.VisualStudio.TextTemplating599A3EB9FF7A51FE8ABC6D40FDEF8A101F73BF76A8A210BBCC75083F17E53FCB894F1279125B18B73CE0ED14173E0AE1B7385517C61963EC959D7FC313905365.GeneratedTextTransformation.TransformText()	NetStandardProject	R:\Projects\github\Vs2017AutomationTests\src\NetStandardProject\NetStandardProject\TextTemplate1.tt	1	
+
+
+
+
+<#+
+	public string GetProjectItemFullPath(EnvDTE.ProjectItem item)
+	{
+		return item.Properties.Item("FullPath").Value.ToString();
+	}
+#>
